@@ -1,14 +1,17 @@
 import argparse
 import logging
+from argparse import ArgumentParser
 from logging.handlers import RotatingFileHandler
+from typing import Dict
 
-from src.constants import BASE_DIR
+from constants import BASE_DIR
 
-LOG_FORMAT = '"%(asctime)s - [%(levelname)s] - %(message)s"'
-DT_FORMAT = '%d.%m.%Y %H:%M:%S'
+LOG_FORMAT: str = '"%(asctime)s - [%(levelname)s] - %(message)s"'
+DT_FORMAT: str = '%d.%m.%Y %H:%M:%S'
 
 
-def configure_argument_parser(available_modes):
+def configure_argument_parser(available_modes: Dict.keys) -> ArgumentParser:
+    '''Конфигурирует аргументы командной строки.'''
     parser = argparse.ArgumentParser(description='Парсер документации Python')
     parser.add_argument(
         'mode',
@@ -30,7 +33,8 @@ def configure_argument_parser(available_modes):
     return parser
 
 
-def configure_logging():
+def configure_logging() -> None:
+    '''Конфигурирует логгирование.'''
     log_dir = BASE_DIR / 'logs'
     log_dir.mkdir(exist_ok=True)
     log_file = log_dir / 'parser.log'

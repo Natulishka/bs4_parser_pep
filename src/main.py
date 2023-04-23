@@ -1,18 +1,21 @@
 import logging
 import re
+from typing import Callable, Dict, List
 from urllib.parse import urljoin
 
 import requests_cache
 from bs4 import BeautifulSoup
+from requests_cache.session import CachedSession
 from tqdm import tqdm
 
-from src.configs import configure_argument_parser, configure_logging
-from src.constants import BASE_DIR, MAIN_DOC_URL, PEP_DOC_URL
-from src.outputs import control_output
-from src.utils import find_tag, get_response
+from configs import configure_argument_parser, configure_logging
+from constants import BASE_DIR, MAIN_DOC_URL, PEP_DOC_URL
+from outputs import control_output
+from utils import find_tag, get_response
 
 
-def whats_new(session):
+def whats_new(session: CachedSession) -> List[str]:
+    '''Собирает информацию об о нововведениях в Python.'''
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
     response = get_response(session, whats_new_url)
     if response is None:
@@ -38,7 +41,8 @@ def whats_new(session):
     return results
 
 
-def latest_versions(session):
+def latest_versions(session: CachedSession) -> List[str]:
+    '''Cобирает информацию о статусах версий Python.'''
     response = get_response(session, MAIN_DOC_URL)
     if response is None:
         return
@@ -65,7 +69,8 @@ def latest_versions(session):
     return results
 
 
-def download(session):
+def download(session: CachedSession) -> None:
+    '''Cкачивает архив с актуальной документацией Python.'''
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     response = get_response(session, downloads_url)
     if response is None:
@@ -86,7 +91,11 @@ def download(session):
     logging.info(f'Архив был загружен и сохранён: {archive_path}')
 
 
-def pep(session):
+def pep(session: CachedSession) -> List[str]:
+    '''
+    Cобирает данные обо всех документах PEP и формирует таблицу со статусами
+    PEP и количеством документов с такими статусами.
+    '''
     amount_statuses = {'Accepted': 0,
                        'Active': 0,
                        'Deferred': 0,
@@ -144,7 +153,7 @@ def pep(session):
     return results
 
 
-MODE_TO_FUNCTION = {
+MODE_TO_FUNCTION: Dict[str, Callable] = {
     'whats-new': whats_new,
     'latest-versions': latest_versions,
     'download': download,
@@ -152,7 +161,8 @@ MODE_TO_FUNCTION = {
 }
 
 
-def main():
+def main() -> None:
+    '''Главная функция.'''
     configure_logging()
     logging.info('Парсер запущен!')
     arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
